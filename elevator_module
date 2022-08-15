@@ -1,0 +1,69 @@
+module elevator_module(clk,reset,goto,stop,door,Up,Down,y);
+input clk,reset;
+
+input [6:0] goto;     // 7 bit goto input (7 bits taken 
+output reg[1:0] door; // door open(1) or close(0)
+output reg[1:0] Up;   // lift going up(1)
+output reg[1:0] Down; // lift going down(1)
+output reg[1:0] stop; // represents (1) if lift is stopped
+
+output [6:0] y;       // y is output floor
+reg [6:0] cf ;        // represents current floor 
+
+initial begin              // iinitial conditions
+    cf= 6'd0;               // represents ground floor
+    stop= 6'd1;             // stop = 1(lift stopped)
+    door = 1'd1;           // door = 1(open)
+    Up=1'd0;               // up_movement = 0 (no up movement)
+    Down=1'd0;             // down_movement = 0(no down movement)
+end
+
+always @ (posedge clk or posedge reset) // operations to work @posedge of clock or if reset button is pushed
+begin
+
+if(reset)                  // if reset is 'ON'
+begin                      // Lift should stop wherever it is and open the gates.
+    cf=cf;                 // represents lift remains at surrent floor if reset is "ON"
+    stop= 6'd1;             // stop = 1(lift stopped)
+    door = 1'd1;           // door = 1(open)
+    Up=1'd0;               // up_movement = 0 (no up movement)
+    Down=1'd0;             // down_movement = 0(no down movement)
+end
+
+else                       // if reset is 'OFF'
+begin
+    if(goto < 6'd41)       //As Max value of req floor is 40
+    begin
+    if(goto < cf )         // If GOTO floor is UP
+    begin                  // Lift will go up one by one until goto floor is reached
+        cf=cf-1;           // represents sequential movement of lift one floor at a time
+        door = 1'd0;         // door is closed
+        stop = 6'd0;         // car is not stopped, i.e. car is moving
+        Up=1'd0;           // elevator car moving up
+        Down=1'd1;         // down is not glowing
+    end
+
+else if (goto > cf)        // If 
+begin
+    cf = cf+1;
+    door=1'd0;
+    stop=6'd0;
+    Up=1'd1;
+    Down=1'd0;
+end
+
+else if(goto == cf )
+begin
+    cf = goto;
+    door=1'd1;
+    stop=6'd1;
+    Up=1'd0;
+    Down=1'd0;
+end
+end
+end
+end
+
+assign y = cf;
+
+endmodule
